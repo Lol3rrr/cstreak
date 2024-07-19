@@ -1,9 +1,18 @@
 use crate::EarnedXp;
 
-#[derive(Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone, serde::Serialize, serde::Deserialize)]
 pub struct Profile {
     pub level: i64,
     pub xp: i64,
+}
+
+impl Default for Profile {
+    fn default() -> Self {
+        Self {
+            level: 1,
+            xp: 0,
+        }
+    }
 }
 
 impl Profile {
