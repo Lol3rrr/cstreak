@@ -33,6 +33,19 @@ jobs:
           tags: |
             # set latest tag for master branch
             type=raw,value=latest,enable={{is_default_branch}}
+      #
+      - name: Install latest nightly
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly
+          override: true
+          components: rustfmt, clippy
+      - run: rustup target add wasm32-unknown-unknown
+      - run: cargo install --locked trunk
+      - name: Build using trunk
+        run: trunk build --release
+        working-directory: webui
+      #
       - name: Build and push
         uses: docker/build-push-action@v3
         with:

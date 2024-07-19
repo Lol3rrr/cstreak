@@ -1,14 +1,3 @@
-FROM rust:1.79 AS builder
+FROM nginx:alpine
 
-COPY . .
-
-RUN cd webui
-
-RUN rustup toolchain install nightly
-RUN rustup default nightly
-RUN rustup target add wasm32-unknown-unknown
-
-RUN cargo build
-RUN cargo install --locked trunk
-
-RUN trunk build --release
+COPY ./webui/dist/ /usr/share/nginx/html/
