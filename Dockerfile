@@ -2,7 +2,7 @@ FROM rust:1.79 AS builder
 
 COPY . .
 
-WORKDIR webui
+RUN cd webui
 
 RUN rustup toolchain install nightly
 RUN rustup default nightly
