@@ -8,10 +8,7 @@ pub struct Profile {
 
 impl Default for Profile {
     fn default() -> Self {
-        Self {
-            level: 1,
-            xp: 0,
-        }
+        Self { level: 1, xp: 0 }
     }
 }
 
@@ -26,5 +23,35 @@ impl Profile {
         let xp_dif = other.xp - self.xp;
 
         EarnedXp(level_dif * 5000 + xp_dif)
+    }
+
+    pub fn target_profile(&self) -> Profile {
+        let resulting_xp = self.xp + crate::total_target();
+
+        let level_delta = resulting_xp / 5000;
+
+        let result_xp = resulting_xp % 5000;
+        let result_level = self.level + level_delta;
+
+        Profile {
+            xp: result_xp,
+            level: result_level,
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn target_normal() {
+        let start = Profile { level: 5, xp: 0 };
+
+        let result = start.target_profile();
+
+        let expected = Profile { level: 7, xp: 1167 };
+
+        assert_eq!(expected, result);
     }
 }

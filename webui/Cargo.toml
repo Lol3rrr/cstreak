@@ -5,10 +5,11 @@ edition = "2021"
 
 [dependencies]
 leptos = { version = "0.6.12", features = ["csr", "nightly"] }
-leptos-use = { version = "0.10", features = ["serde"] }
+leptos-use = { version = "0.13", features = [] }
 stylers = { version = "1.0.0-alpha" }
 
 cstreak = { path = "../cstreak/" }
+codee = { version = "0.2.0", features = ["json_serde"] }
 
 [build-dependencies]
 stylers = { version = "1.0.0-alpha" }

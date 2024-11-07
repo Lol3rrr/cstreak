@@ -17,8 +17,8 @@ fn App() -> impl IntoView {
         level: 1,
     });
 
-    let (stored_start_profile, write_start_profile, delete_start_profile) = leptos_use::storage::use_local_storage::<cstreak::Profile, leptos_use::utils::JsonCodec>("start_profile");
-    let (stored_current_profile, write_current_profile, delete_current_profile) = leptos_use::storage::use_local_storage::<cstreak::Profile, leptos_use::utils::JsonCodec>("current_profile");
+    let (stored_start_profile, write_start_profile, delete_start_profile) = leptos_use::storage::use_local_storage::<cstreak::Profile, codee::string::JsonSerdeCodec>("start_profile");
+    let (stored_current_profile, write_current_profile, delete_current_profile) = leptos_use::storage::use_local_storage::<cstreak::Profile, codee::string::JsonSerdeCodec>("current_profile");
 
     let progress_value = move || {
         let start = start_profile();
@@ -35,6 +35,11 @@ fn App() -> impl IntoView {
 
         let earned = start.earned_xp(&current);
         earned.expected_games(cstreak::Game::Deathmatch { score: expected_score() })
+    };
+
+    let target = move || {
+        let start = start_profile();
+        start.target_profile()
     };
 
     set_start_profile.set_untracked(stored_start_profile.get_untracked());
@@ -113,10 +118,14 @@ fn App() -> impl IntoView {
             </div>
 
             <div class="progress">
+                <div>
+                    <p> {progress_value} "/" {11167} - { move || format!("{:03.02}%", progress_value() as f32 / 11167.0 * 100.0) } </p>
+                </div>
                 <progress max={11167} value = progress_value />
                 <div class="progress-text">
-                    <p> {progress_value} "/" {11167}  </p>
-                    <p> { move || format!("{:03.02}%", progress_value() as f32 / 11167.0 * 100.0) } </p>
+                    <p> Missing { move || 11167 - progress_value() } </p>
+                    <p>Target-Level: { move || target().level } </p>
+                    <p>Target-XP: { move || target().xp } </p>
                 </div>
             </div>
 

@@ -8,7 +8,12 @@ fn main() {
 
     let earned_xp = start_profile.earned_xp(&current_profile);
 
-    println!("XP-Status: {:?}/{} ({:.0}%)", earned_xp, cstreak::total_target(), earned_xp.0 as f32 * 100.0 / cstreak::total_target() as f32 );
+    println!(
+        "XP-Status: {:?}/{} ({:.0}%)",
+        earned_xp,
+        cstreak::total_target(),
+        earned_xp.0 as f32 * 100.0 / cstreak::total_target() as f32
+    );
 
     for variance in [1.00, 0.90, 1.10] {
         let updated_score = (600.0 * variance) as i64;
@@ -27,6 +32,11 @@ fn main() {
 
         let hours = duration.as_secs() / 3600;
         let minutes = (duration.as_secs() % 3600) / 60;
-        println!("Duration: {}:{} (total: {}s)", hours, minutes, duration.as_secs());
+        println!(
+            "Duration: {}:{} (total: {}s)",
+            hours,
+            minutes,
+            duration.as_secs()
+        );
     }
 }
