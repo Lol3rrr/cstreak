@@ -1880,7 +1880,9 @@ version = "0.1.0"
 dependencies = [
  "codee",
  "cstreak",
+ "futures-util",
  "leptos",
+ "serde",
  "serde_json",
  "stylers 0.3.2",
  "stylers 1.0.0-alpha",

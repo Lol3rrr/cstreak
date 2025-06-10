@@ -25,8 +25,8 @@ impl Profile {
         EarnedXp(level_dif * 5000 + xp_dif)
     }
 
-    pub fn target_profile(&self) -> Profile {
-        let resulting_xp = self.xp + crate::total_target();
+    pub fn target_profile(&self, mission_xp: i64) -> Profile {
+        let resulting_xp = self.xp + crate::total_target() + mission_xp;
 
         let level_delta = resulting_xp / 5000;
 

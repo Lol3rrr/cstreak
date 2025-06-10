@@ -1,9 +1,13 @@
 use leptos::prelude::*;
 
+use futures_util::StreamExt;
+
+use core::pin::pin;
+
 #[component]
 pub fn ProfileInput(
     start_profile: cstreak::Profile,
-    set_profile: WriteSignal<cstreak::Profile>
+    set_profile: WriteSignal<cstreak::Profile>,
 ) -> impl IntoView  {
 
     let (rank, set_rank) = signal(start_profile.level);
@@ -91,4 +95,18 @@ pub fn ProfileInput(
             <button on:click=submit> Confirm </button>
         </div>
     }
+}
+
+pub fn localstorage<T>(storage: web_sys::Storage, name: &'static str, data: ReadSignal<T>, set_initial: impl FnOnce(T)) where T: Default + serde::Serialize + serde::de::DeserializeOwned + 'static, ReadSignal<T>: ToStream<T> {
+    let start_value = storage.get(name).unwrap().map(|v| serde_json::from_str::<T>(&v).ok()).flatten().unwrap_or_default();
+    set_initial(start_value);
+
+    leptos::reactive::spawn_local(async move {
+        let mut stream = pin!(data.to_stream());
+
+        while let Some(v) = stream.next().await {
+            let value = serde_json::to_string(&v).unwrap();
+            storage.set(name, &value).unwrap();
+        }
+    });
 }
