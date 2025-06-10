@@ -13,6 +13,7 @@ impl Default for Profile {
 }
 
 impl Profile {
+    /// Computes the XP difference between `self` and `other`, with `self` being the smaller value
     pub fn earned_xp(&self, other: &Self) -> EarnedXp {
         let level_dif = if other.level < self.level {
             other.level + (40 - self.level - 1)
@@ -25,8 +26,8 @@ impl Profile {
         EarnedXp(level_dif * 5000 + xp_dif)
     }
 
-    pub fn target_profile(&self) -> Profile {
-        let resulting_xp = self.xp + crate::total_target();
+    pub fn target_profile(&self, mission_xp: i64) -> Profile {
+        let resulting_xp = self.xp + crate::total_target() + mission_xp;
 
         let level_delta = resulting_xp / 5000;
 
@@ -45,12 +46,23 @@ mod tests {
     use super::*;
 
     #[test]
-    fn target_normal() {
+    fn target_normal_no_mission() {
         let start = Profile { level: 5, xp: 0 };
 
-        let result = start.target_profile();
+        let result = start.target_profile(0);
 
         let expected = Profile { level: 7, xp: 1167 };
+
+        assert_eq!(expected, result);
+    }
+
+    #[test]
+    fn target_normal_with_mission() {
+        let start = Profile { level: 5, xp: 0 };
+
+        let result = start.target_profile(200);
+
+        let expected = Profile { level: 7, xp: 1367 };
 
         assert_eq!(expected, result);
     }

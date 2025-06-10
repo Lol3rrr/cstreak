@@ -9,34 +9,26 @@ use webui::ProfileInput;
 fn App() -> impl IntoView {
     let (expected_score, set_expected_score) = signal(600);
 
-    let (start_profile, set_start_profile) = signal(cstreak::Profile {
-        xp: 0,
-        level: 1,
-    });
-
-    let (current_profile, set_current_profile) = signal(cstreak::Profile {
-        xp: 0,
-        level: 1,
-    });
+    let (start_profile, set_start_profile) = signal(cstreak::Profile::default());
+    let (current_profile, set_current_profile) = signal(cstreak::Profile::default());
+    
+    let (mission_xp, set_mission_xp) = signal(0);
 
     let storage = window().local_storage().unwrap().unwrap();
 
-    let start_value = storage.get("start_profile").unwrap().map(|v| serde_json::from_str::<cstreak::Profile>(&v).ok()).flatten().unwrap_or_default();
-    set_start_profile.set(start_value);
-    let current_value = storage.get("current_profile").unwrap().map(|v| serde_json::from_str::<cstreak::Profile>(&v).ok()).flatten().unwrap_or_default();
-    set_current_profile.set(current_value);
-
+    webui::localstorage::<_, cstreak::Profile>(storage.clone(), "start_profile", start_profile, |initial_value| {
+        set_start_profile.set(initial_value);
+    });
+    webui::localstorage::<_, cstreak::Profile>(storage.clone(), "current_profile", current_profile, |initial_value| {
+        set_current_profile.set(initial_value);
+    });
+    webui::localstorage::<_, i64>(storage.clone(), "mission_xp", mission_xp, |initial_value| {
+        set_mission_xp.set(initial_value);
+    });
 
     let progress_value = move || {
         let start = start_profile();
         let current = current_profile();
-
-        let start_str = serde_json::to_string(&start).unwrap();
-        let current_str = serde_json::to_string(&current).unwrap();
-
-        let storage = window().local_storage().unwrap().unwrap();
-        storage.set("start_profile", &start_str).unwrap();
-        storage.set("current_profile", &current_str).unwrap();
 
         start.earned_xp(&current).0
     };
@@ -45,12 +37,16 @@ fn App() -> impl IntoView {
         let current = current_profile();
 
         let earned = start.earned_xp(&current);
-        earned.expected_games(cstreak::Game::Deathmatch { score: expected_score() })
+        earned.expected_games(cstreak::Game::Deathmatch { score: expected_score() }, mission_xp())
     };
 
     let target = move || {
         let start = start_profile();
-        start.target_profile()
+        start.target_profile(mission_xp())
+    };
+
+    let total_xp_target = move || {
+        11167 + mission_xp()
     };
 
     // Color Theme (https://venngage.com/blog/blue-color-palettes/):
@@ -128,11 +124,11 @@ fn App() -> impl IntoView {
 
             <div class="progress">
                 <div>
-                    <p> {progress_value} "/" {11167} - { move || format!("{:03.02}%", progress_value() as f32 / 11167.0 * 100.0) } </p>
+                    <p> {progress_value} "/" {total_xp_target} - { move || format!("{:03.02}%", progress_value() as f32 / (total_xp_target() as f32) * 100.0) } </p>
                 </div>
-                <progress max={11167} value = progress_value />
+                <progress max={total_xp_target} value = progress_value />
                 <div class="progress-text">
-                    <p> Missing { move || 11167 - progress_value() } </p>
+                    <p> Missing { move || total_xp_target() - progress_value() } </p>
                     <p>Target-Level: { move || target().level } </p>
                     <p>Target-XP: { move || target().xp } </p>
                 </div>
@@ -142,6 +138,21 @@ fn App() -> impl IntoView {
                 <p>Current Profile</p>
                 <ProfileInput start_profile=current_profile.get_untracked() set_profile=set_current_profile />
             </div>
+        </div>
+
+        <div>
+            <label>Mission XP:</label>
+            <input type="text" on:input=move |ev| {
+                let raw_value = event_target_value(&ev);
+                set_mission_xp.update(move |xp| {
+                    match raw_value.parse() {
+                        Ok(v) => {
+                            *xp = v;
+                        }
+                        _ => {}
+                    };
+                });
+            } prop:value=mission_xp />
         </div>
 
         <hr/>

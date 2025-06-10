@@ -19,7 +19,7 @@ fn main() {
         let updated_score = (600.0 * variance) as i64;
         let games = earned_xp.expected_games(cstreak::Game::Deathmatch {
             score: updated_score,
-        });
+        }, 0);
 
         let duration = std::time::Duration::from_secs(games as u64 * 10 * 60);
 
