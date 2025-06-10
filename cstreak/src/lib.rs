@@ -1,10 +1,32 @@
 mod account;
 pub use account::Profile;
 
-const XP_STEPS: [(i64, i64); 4] = [(4500, 4), (7500, 2), (11167, 1), (i64::MAX, 0)];
+struct XpStep {
+    upper_limit: i64,
+    multiplier: i64,
+}
+
+const XP_STEPS: [XpStep; 4] = [
+    XpStep {
+        upper_limit: 4500,
+        multiplier: 4,
+    },
+    XpStep {
+        upper_limit: 7500,
+        multiplier: 2,
+    },
+    XpStep {
+        upper_limit: 11167,
+        multiplier: 1,
+    },
+    XpStep {
+        upper_limit: i64::MAX,
+        multiplier: 0,
+    },
+];
 
 pub fn total_target() -> i64 {
-    XP_STEPS[2].0
+    XP_STEPS[2].upper_limit
 }
 
 #[derive(Debug, PartialEq, Eq, Clone, Hash, PartialOrd, Ord)]
@@ -13,6 +35,7 @@ pub enum Game {
 }
 
 impl Game {
+    /// Calculates the XP earned for the game
     pub fn xp(&self) -> i64 {
         match self {
             Self::Deathmatch { score } => score / 5,
@@ -24,30 +47,32 @@ impl Game {
 pub struct EarnedXp(pub i64);
 
 impl EarnedXp {
+    /// Calculates the number of games that need to be played assuming every game is like the
+    /// provided `expected_game`
     pub fn expected_games(&self, expected_game: Game) -> i64 {
         let mut games = 0;
         let mut current_earned = self.0;
 
         for window in XP_STEPS.windows(2) {
             assert_eq!(2, window.len());
-            let (first_thres, first_multiplier) = window[0];
-            let (_, second_multiplier) = window[1];
+            let first = &window[0];
+            let second = &window[1];
 
-            if current_earned < first_thres {
-                let until_threshold = first_thres - current_earned;
-                let multiplied_games = until_threshold / (expected_game.xp() * first_multiplier);
+            if current_earned < first.upper_limit {
+                let until_threshold = first.upper_limit - current_earned;
+                let multiplied_games = until_threshold / (expected_game.xp() * first.multiplier);
 
                 games += multiplied_games;
-                current_earned += multiplied_games * expected_game.xp() * first_multiplier;
+                current_earned += multiplied_games * expected_game.xp() * first.multiplier;
 
-                let remaining_until_threshold = first_thres - current_earned;
+                let remaining_until_threshold = first.upper_limit - current_earned;
                 if remaining_until_threshold > 0 {
-                    let earn_in_first = remaining_until_threshold / first_multiplier;
+                    let earn_in_first = remaining_until_threshold / first.multiplier;
                     let earn_in_second = expected_game.xp() - earn_in_first;
 
                     games += 1;
                     current_earned +=
-                        earn_in_first * first_multiplier + earn_in_second * second_multiplier;
+                        earn_in_first * first.multiplier + earn_in_second * second.multiplier;
                 }
             }
         }
@@ -60,9 +85,9 @@ impl EarnedXp {
 mod tests {
     use super::*;
 
-    const TARGET: i64 = XP_STEPS[2].0;
-    const THRESHOLD_2TIMES: i64 = XP_STEPS[1].0;
-    const THRESHOLD_4TIMES: i64 = XP_STEPS[0].0;
+    const TARGET: i64 = XP_STEPS[2].upper_limit;
+    const THRESHOLD_2TIMES: i64 = XP_STEPS[1].upper_limit;
+    const THRESHOLD_4TIMES: i64 = XP_STEPS[0].upper_limit;
 
     #[test]
     fn games_after_bonuses() {
