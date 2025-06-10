@@ -1,31 +1,42 @@
-use leptos::*;
+use leptos::prelude::*;
 use stylers::style;
+use leptos::prelude::GetUntracked as LGetUntracked;
+use leptos::prelude::Set as LSet;
 
 use webui::ProfileInput;
 
 #[component]
 fn App() -> impl IntoView {
-    let (expected_score, set_expected_score) = create_signal(600);
+    let (expected_score, set_expected_score) = signal(600);
 
-    let (start_profile, set_start_profile) = create_signal(cstreak::Profile {
+    let (start_profile, set_start_profile) = signal(cstreak::Profile {
         xp: 0,
         level: 1,
     });
 
-    let (current_profile, set_current_profile) = create_signal(cstreak::Profile {
+    let (current_profile, set_current_profile) = signal(cstreak::Profile {
         xp: 0,
         level: 1,
     });
 
-    let (stored_start_profile, write_start_profile, delete_start_profile) = leptos_use::storage::use_local_storage::<cstreak::Profile, codee::string::JsonSerdeCodec>("start_profile");
-    let (stored_current_profile, write_current_profile, delete_current_profile) = leptos_use::storage::use_local_storage::<cstreak::Profile, codee::string::JsonSerdeCodec>("current_profile");
+    let storage = window().local_storage().unwrap().unwrap();
+
+    let start_value = storage.get("start_profile").unwrap().map(|v| serde_json::from_str::<cstreak::Profile>(&v).ok()).flatten().unwrap_or_default();
+    set_start_profile.set(start_value);
+    let current_value = storage.get("current_profile").unwrap().map(|v| serde_json::from_str::<cstreak::Profile>(&v).ok()).flatten().unwrap_or_default();
+    set_current_profile.set(current_value);
+
 
     let progress_value = move || {
         let start = start_profile();
         let current = current_profile();
 
-        write_start_profile(start.clone());
-        write_current_profile(current.clone());
+        let start_str = serde_json::to_string(&start).unwrap();
+        let current_str = serde_json::to_string(&current).unwrap();
+
+        let storage = window().local_storage().unwrap().unwrap();
+        storage.set("start_profile", &start_str).unwrap();
+        storage.set("current_profile", &current_str).unwrap();
 
         start.earned_xp(&current).0
     };
@@ -42,16 +53,14 @@ fn App() -> impl IntoView {
         start.target_profile()
     };
 
-    set_start_profile.set_untracked(stored_start_profile.get_untracked());
-    set_current_profile.set_untracked(stored_current_profile.get_untracked());
-
     // Color Theme (https://venngage.com/blog/blue-color-palettes/):
     // * 3d5a80
     // * 98c1d9
     // * e0fbfc
     // * ee6c4d
     // * 293241
-    let progress_class = style! { 
+    let progress_class = style! {
+        "progress_class",
         progress {
             border-radius: 7px;
             width: 60%;
