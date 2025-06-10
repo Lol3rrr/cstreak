@@ -1,4 +1,4 @@
-use leptos::*;
+use leptos::prelude::*;
 
 #[component]
 pub fn ProfileInput(
@@ -6,8 +6,8 @@ pub fn ProfileInput(
     set_profile: WriteSignal<cstreak::Profile>
 ) -> impl IntoView  {
 
-    let (rank, set_rank) = create_signal(start_profile.level);
-    let (xp, set_xp) = create_signal(start_profile.xp);
+    let (rank, set_rank) = signal(start_profile.level);
+    let (xp, set_xp) = signal(start_profile.xp);
     
     let submit = move |_| {
         let profile = cstreak::Profile {
@@ -18,6 +18,7 @@ pub fn ProfileInput(
     };
 
     let profile_style = stylers::style! {
+        "profile_input",
         div {
             display: grid;
             grid-template-columns: 75px 75px;
