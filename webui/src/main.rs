@@ -16,20 +16,19 @@ fn App() -> impl IntoView {
 
     let storage = window().local_storage().unwrap().unwrap();
 
-    webui::localstorage::<cstreak::Profile>(storage.clone(), "start_profile", start_profile, |initial_value| {
+    webui::localstorage::<_, cstreak::Profile>(storage.clone(), "start_profile", start_profile, |initial_value| {
         set_start_profile.set(initial_value);
     });
-    webui::localstorage::<cstreak::Profile>(storage.clone(), "current_profile", current_profile, |initial_value| {
+    webui::localstorage::<_, cstreak::Profile>(storage.clone(), "current_profile", current_profile, |initial_value| {
         set_current_profile.set(initial_value);
     });
-    webui::localstorage::<i64>(storage.clone(), "mission_xp", mission_xp, |initial_value| {
+    webui::localstorage::<_, i64>(storage.clone(), "mission_xp", mission_xp, |initial_value| {
         set_mission_xp.set(initial_value);
     });
 
     let progress_value = move || {
         let start = start_profile();
         let current = current_profile();
-
 
         start.earned_xp(&current).0
     };
@@ -38,7 +37,7 @@ fn App() -> impl IntoView {
         let current = current_profile();
 
         let earned = start.earned_xp(&current);
-        earned.expected_games(cstreak::Game::Deathmatch { score: expected_score() })
+        earned.expected_games(cstreak::Game::Deathmatch { score: expected_score() }, mission_xp())
     };
 
     let target = move || {

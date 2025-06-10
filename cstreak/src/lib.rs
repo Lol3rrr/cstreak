@@ -49,9 +49,9 @@ pub struct EarnedXp(pub i64);
 impl EarnedXp {
     /// Calculates the number of games that need to be played assuming every game is like the
     /// provided `expected_game`
-    pub fn expected_games(&self, expected_game: Game) -> i64 {
+    pub fn expected_games(&self, expected_game: Game, mission_xp: i64) -> i64 {
         let mut games = 0;
-        let mut current_earned = self.0;
+        let mut current_earned = self.0 - mission_xp;
 
         for window in XP_STEPS.windows(2) {
             assert_eq!(2, window.len());
@@ -93,14 +93,14 @@ mod tests {
     fn games_after_bonuses() {
         assert_eq!(
             2,
-            EarnedXp(TARGET - 200).expected_games(Game::Deathmatch { score: 500 })
+            EarnedXp(TARGET - 200).expected_games(Game::Deathmatch { score: 500 }, 0)
         );
     }
     #[test]
     fn games_after_bonuses_not_exact() {
         assert_eq!(
             3,
-            EarnedXp(TARGET - 250).expected_games(Game::Deathmatch { score: 500 })
+            EarnedXp(TARGET - 250).expected_games(Game::Deathmatch { score: 500 }, 0)
         );
     }
 
@@ -108,21 +108,21 @@ mod tests {
     fn games_with_2x() {
         assert_eq!(
             38,
-            EarnedXp(THRESHOLD_2TIMES - 233).expected_games(Game::Deathmatch { score: 500 })
+            EarnedXp(THRESHOLD_2TIMES - 233).expected_games(Game::Deathmatch { score: 500 }, 0)
         );
     }
     #[test]
     fn games_with_2x_exact_until_threshold() {
         assert_eq!(
             38,
-            EarnedXp(THRESHOLD_2TIMES - 200).expected_games(Game::Deathmatch { score: 500 })
+            EarnedXp(THRESHOLD_2TIMES - 200).expected_games(Game::Deathmatch { score: 500 }, 0)
         );
     }
     #[test]
     fn games_with_2x_not_exact() {
         assert_eq!(
             38,
-            EarnedXp(THRESHOLD_2TIMES - 250).expected_games(Game::Deathmatch { score: 500 })
+            EarnedXp(THRESHOLD_2TIMES - 250).expected_games(Game::Deathmatch { score: 500 }, 0)
         );
     }
 
@@ -130,21 +130,21 @@ mod tests {
     fn games_with_4x() {
         assert_eq!(
             53,
-            EarnedXp(THRESHOLD_4TIMES - 233).expected_games(Game::Deathmatch { score: 500 })
+            EarnedXp(THRESHOLD_4TIMES - 233).expected_games(Game::Deathmatch { score: 500 }, 0)
         );
     }
     #[test]
     fn games_with_4x_exact_until_threshold() {
         assert_eq!(
             53,
-            EarnedXp(THRESHOLD_4TIMES - 200).expected_games(Game::Deathmatch { score: 500 })
+            EarnedXp(THRESHOLD_4TIMES - 200).expected_games(Game::Deathmatch { score: 500 }, 0)
         );
     }
     #[test]
     fn games_with_4x_not_exact() {
         assert_eq!(
             53,
-            EarnedXp(THRESHOLD_4TIMES - 250).expected_games(Game::Deathmatch { score: 500 })
+            EarnedXp(THRESHOLD_4TIMES - 250).expected_games(Game::Deathmatch { score: 500 }, 0)
         );
     }
 

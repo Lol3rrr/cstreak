@@ -97,7 +97,7 @@ pub fn ProfileInput(
     }
 }
 
-pub fn localstorage<T>(storage: web_sys::Storage, name: &'static str, data: ReadSignal<T>, set_initial: impl FnOnce(T)) where T: Default + serde::Serialize + serde::de::DeserializeOwned + 'static, ReadSignal<T>: ToStream<T> {
+pub fn localstorage<RS, T>(storage: web_sys::Storage, name: &'static str, data: RS, set_initial: impl FnOnce(T)) where T: Default + serde::Serialize + serde::de::DeserializeOwned + 'static, RS: ToStream<T> + 'static, RS: Get {
     let start_value = storage.get(name).unwrap().map(|v| serde_json::from_str::<T>(&v).ok()).flatten().unwrap_or_default();
     set_initial(start_value);
 
